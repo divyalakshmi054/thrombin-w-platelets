@@ -62,13 +62,27 @@ for i ∈ 1:R
     FVIIa_idx = findfirst(x->x=="FVIIa",dd.total_species_list)
     FXa_idx = findfirst(x->x=="FXa",dd.total_species_list)
 
-    G[AT_idx,9] = 0.045;
+    
+    # r1 -
     G[TFPI_idx,1] = -0.65;
+
+    # r2 -
+    G[AP_idx,2] = 0.01;
+
+    # r4 -
+    G[AP_idx,4] = 0.25;
+
+    # r5 -
     G[AP_idx,5] = 0.05;
     G[FVIIa_idx,5] = 0.9;
+
+    # r6 -
     G[FXa_idx,6] = 0.75;
-    G[AP_idx,4] = 0.25;
-    G[AP_idx,2] = 0.01;
+
+    # r9 -
+    G[AT_idx,9] = 0.045;
+
+    # r10 -
     G[FIIa_idx,10] = 0.01;
 
     # run the model -
