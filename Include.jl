@@ -5,6 +5,7 @@ using DataFrames
 using DifferentialEquations
 using GlobalSensitivity
 using NumericalIntegration
+using Plots
 
 # paths -
 _PATH_TO_MODEL = joinpath(pwd(),"model")

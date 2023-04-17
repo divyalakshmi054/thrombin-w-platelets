@@ -50,8 +50,10 @@ for i ∈ 1:R
 
     # update α -
     α = model.α
-    α[1] = 0.7
-    α[9] = 0.2
+    α[1] = 0.061
+    α[9] = 0.7
+    α[6] = 0.5
+    α[10] = 0.75
 
     # update G -
     G = model.G
@@ -59,31 +61,33 @@ for i ∈ 1:R
     TFPI_idx = findfirst(x->x=="TFPI",dd.total_species_list)
     FIIa_idx = findfirst(x->x=="FIIa",dd.total_species_list)
     AP_idx = findfirst(x->x=="AP",dd.total_species_list)
+    PL_idx = findfirst(x->x=="PL",dd.total_species_list)
     FVIIa_idx = findfirst(x->x=="FVIIa",dd.total_species_list)
     FXa_idx = findfirst(x->x=="FXa",dd.total_species_list)
+    FVa_idx = findfirst(x->x=="FVa",dd.total_species_list)
 
     
     # r1 -
-    G[TFPI_idx,1] = -0.65;
-
-    # r2 -
-    G[AP_idx,2] = 0.01;
+    G[TFPI_idx,1] = -0.65;      # freeze
 
     # r4 -
-    G[AP_idx,4] = 0.25;
+    #G[AP_idx,4] = 0.8;
 
     # r5 -
-    G[AP_idx,5] = 0.05;
+    G[AP_idx,5] = 0.5;
     G[FVIIa_idx,5] = 0.9;
 
     # r6 -
+    G[AP_idx,6] = 0.05;
     G[FXa_idx,6] = 0.75;
+    G[FVa_idx,6] = 0.5;
 
     # r9 -
-    G[AT_idx,9] = 0.045;
+    G[AT_idx,9] = 0.045;        # freeze
 
     # r10 -
-    G[FIIa_idx,10] = 0.01;
+    G[FIIa_idx,10] = 0.25;
+    G[PL_idx,10] = 0.75;
 
     # run the model -
     global (T,U) = evaluate(dd,tspan=(0.0,120.0))
@@ -91,6 +95,11 @@ for i ∈ 1:R
 
     path_to_sim_data = joinpath(_PATH_TO_TMP, "SIM-visit-$(visit)-TF-$(i).csv")
     CSV.write(path_to_sim_data, Tables.table(hcat(data),header=vcat("Time",dd.list_of_dynamic_species)))
+
+    # make plots -
+    _PATH_TO_FIGS = joinpath(pwd(),"figs")
+    path_to_thrombin_figs = joinpath(_PATH_TO_FIGS, "Thrombin_plot_visit_$(visit)_run$(i).png")
+    savefig(plot(T, U[:,9], xticks=0.0:10:180,xlabel="Time (min)", ylabel="FIIa (nM)", title="[Thrombin] vs. time, patient $(i), visit $(visit)"), path_to_thrombin_figs)
 
 end
 
