@@ -8,14 +8,14 @@ model_file = joinpath(_PATH_TO_MODEL,"Feedback.bst")
 model = build(model_file)
 
 # load the training data -
-data_file = joinpath(_PATH_TO_DATA,"Training-Thrombin-TF-Transformed-w-Labels.csv")
+data_file = joinpath(_PATH_TO_DATA,"Training-Composition-Transformed-w-Labels.csv")
 training_df = CSV.read(data_file,DataFrame)
 
 # which visit?
-visit = 2;
+visit = 1;
 
 #let's filter visit 4s since we look to train using that visit
-visit_df = filter(:visitid => x->(x==visit), training_df) 
+visit_df = filter(:Visit => x->(x==visit), training_df) 
 
 # size of training set -
 (R,C) = size(visit_df)
@@ -50,10 +50,8 @@ for i ∈ 1:R
 
     # update α -
     α = model.α
-    α[1] = 0.061
-    α[9] = 0.7
-    α[6] = 0.5
-    α[10] = 0.75
+    α[1] = 0.7
+    α[9] = 0.2
 
     # update G -
     G = model.G
@@ -67,27 +65,28 @@ for i ∈ 1:R
     FVa_idx = findfirst(x->x=="FVa",dd.total_species_list)
 
     
-    # r1 -
-    G[TFPI_idx,1] = -0.65;      # freeze
+   # r1 -
+   G[TFPI_idx,1] = -0.65;
 
-    # r4 -
-    #G[AP_idx,4] = 0.8;
+   # r2 -
+   G[AP_idx,2] = 0.01;
 
-    # r5 -
-    G[AP_idx,5] = 0.5;
-    G[FVIIa_idx,5] = 0.9;
+   # r4 -
+   G[AP_idx,4] = 0.25;
 
-    # r6 -
-    G[AP_idx,6] = 0.05;
-    G[FXa_idx,6] = 0.75;
-    G[FVa_idx,6] = 0.5;
+   # r5 -
+   G[AP_idx,5] = 0.05;
+   G[FVIIa_idx,5] = 0.9;
 
-    # r9 -
-    G[AT_idx,9] = 0.045;        # freeze
+   # r6 -
+   G[FXa_idx,6] = 0.75;
+   G[FVa_idx,6] = 0.75;
 
-    # r10 -
-    G[FIIa_idx,10] = 0.25;
-    G[PL_idx,10] = 0.75;
+   # r9 -
+   G[AT_idx,9] = 0.045;
+
+   # r10 -
+   G[FIIa_idx,10] = 0.01;
 
     # run the model -
     global (T,U) = evaluate(dd,tspan=(0.0,120.0))
