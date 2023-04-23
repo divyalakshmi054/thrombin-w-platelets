@@ -75,12 +75,12 @@ for i ∈ 1:R
    G[AP_idx,4] = 0.25;
 
    # r5 -
-   G[AP_idx,5] = 0.05;
+   G[AP_idx,5] = 0.12;
    G[FVIIa_idx,5] = 0.9;
 
    # r6 -
    G[FXa_idx,6] = 0.75;
-   G[FVa_idx,6] = 0.75;
+   G[FVa_idx,6] = 0.9;
 
    # r9 -
    G[AT_idx,9] = 0.045;
