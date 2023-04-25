@@ -1,4 +1,4 @@
-function loss_scalar(κ::Array{Float64,1}, Y::Array{Float64,1},  model::Dict{String,Any})
+function loss_scalar(κ::Array{Float64,1}, Y::Array{Float64,1},  model::BSTModel)
 
     # get the G matrix -
     G = model.G
@@ -7,14 +7,14 @@ function loss_scalar(κ::Array{Float64,1}, Y::Array{Float64,1},  model::Dict{Str
     # 1 - 10 : α vector
     model.α = κ[1:10]
 
-    AT_idx = findfirst(x->x=="AT",dd.total_species_list)
-    TFPI_idx = findfirst(x->x=="TFPI",dd.total_species_list)
-    FIIa_idx = findfirst(x->x=="FIIa",dd.total_species_list)
-    AP_idx = findfirst(x->x=="AP",dd.total_species_list)
-    PL_idx = findfirst(x->x=="PL",dd.total_species_list)
-    FVIIa_idx = findfirst(x->x=="FVIIa",dd.total_species_list)
-    FXa_idx = findfirst(x->x=="FXa",dd.total_species_list)
-    FVa_idx = findfirst(x->x=="FVa",dd.total_species_list)
+    AT_idx = findfirst(x->x=="AT",model.total_species_list)
+    TFPI_idx = findfirst(x->x=="TFPI",model.total_species_list)
+    FIIa_idx = findfirst(x->x=="FIIa",model.total_species_list)
+    AP_idx = findfirst(x->x=="AP",model.total_species_list)
+    PL_idx = findfirst(x->x=="PL",model.total_species_list)
+    FVIIa_idx = findfirst(x->x=="FVIIa",model.total_species_list)
+    FXa_idx = findfirst(x->x=="FXa",model.total_species_list)
+    FVa_idx = findfirst(x->x=="FVa",model.total_species_list)
 
     
    # r1 -
@@ -42,11 +42,11 @@ function loss_scalar(κ::Array{Float64,1}, Y::Array{Float64,1},  model::Dict{Str
 
 
     # run the model -
-    (T,U) = evaluate(model)
-    Xₘ = hcat(U...)
+    (T,U) = evaluate(model,tspan=(0.0,120.0))
+    data = [T U]
 
     # compute the model ouput -
-    Yₘ = model_output_vector(T,Xₘ[9,:]) # properties of the Thrombin curve 
+    Yₘ = model_output_vector(T,U[:,9]) # properties of the Thrombin curve 
     ϵ = norm((Y .- Yₘ).^2)
 
     # @info ϵ

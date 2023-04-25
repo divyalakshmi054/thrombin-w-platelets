@@ -63,3 +63,23 @@ function model_output_vector(T::Array{Float64,1}, X::Array{Float64,1})::Array{Fl
     # return -
     return output_vector
 end
+
+function max_FIIa_rate_exp(T::Array{Float64,1}, X::Array{Float64,1})::Float64
+    
+    # intialize -
+    N = length(T) # sim to 50 min
+    diff_array = Array{Float64,1}(undef, N - 1)
+    t_array = Array{Float64,1}(undef, N - 1)
+
+    # compute the ΔX/ΔT -
+    for i ∈ 1:(N-1)
+        
+        # compute diff -
+        ΔT = (T[i+1] - T[i])
+        ΔX = (X[i+1] - X[i])*(1/ΔT)
+        diff_array[i] = ΔX
+    end
+
+    # find the max -
+    return maximum(diff_array)
+end

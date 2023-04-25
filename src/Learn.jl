@@ -1,4 +1,7 @@
-function learn_optim(index::Int, model::Dict{String,Any}, training_df::DataFrame, Y; 
+# include -
+include("Simulation.jl")
+
+function learn_optim(index::Int, model::BSTModel, training_df::DataFrame, Y; 
     pₒ::Union{Nothing,Array{Float64,1}} = nothing)
 
     # main simulation loop -
@@ -29,25 +32,25 @@ function learn_optim(index::Int, model::Dict{String,Any}, training_df::DataFrame
     κ = [
             
             # default: hand fit set -
-            0.70    0.01 10.0   ; # 1
-            1.0     0.01 10.0   ; # 2
-            1.0     0.01 10.0   ; # 3
-            1.0     0.01 10.0   ; # 4
-            1.0     0.01 10.0   ; # 5
-            1.0     0.01 10.0   ; # 6
-            1.0     0.01 10.0   ; # 7
-            1.0     0.01 10.0   ; # 8
-            0.20    0.01 10.0   ; # 9
-            1.0     0.01 10.0   ; # 10
-            0.65    0.01 10.0   ; # 11
-            0.01    0.01 10.0   ; # 12
-            0.25    0.01 10.0   ; # 13
-            0.20    0.01 10.0   ; # 14
-            0.90    0.01 10.0   ; # 15
-            0.95    0.01 10.0   ; # 16
-            0.90    0.01 10.0   ; # 17
-            0.045   0.01 10.0   ; # 18
-            0.01    0.01 10.0   ; # 19
+            0.70    0.001 10.0   ; # 1
+            1.0     0.001 10.0   ; # 2
+            1.0     0.001 10.0   ; # 3
+            1.0     0.001 10.0   ; # 4
+            1.0     0.001 10.0   ; # 5
+            1.0     0.001 10.0   ; # 6
+            1.0     0.001 10.0   ; # 7
+            1.0     0.001 10.0   ; # 8
+            0.20    0.001 10.0   ; # 9
+            1.0     0.001 10.0   ; # 10
+            0.65    0.001 10.0   ; # 11
+            0.01    0.001 10.0   ; # 12
+            0.25    0.001 10.0   ; # 13
+            0.20    0.001 10.0   ; # 14
+            0.90    0.001 10.0   ; # 15
+            0.95    0.001 10.0   ; # 16
+            0.90    0.001 10.0   ; # 17
+            0.045   0.001 10.0   ; # 18
+            0.01    0.001 10.0   ; # 19
         ];
 
     # set default set as the start -
@@ -71,14 +74,14 @@ function learn_optim(index::Int, model::Dict{String,Any}, training_df::DataFrame
     model.α = p_best[1:10]
     G = model.G
 
-    AT_idx = findfirst(x->x=="AT",dd.total_species_list)
-    TFPI_idx = findfirst(x->x=="TFPI",dd.total_species_list)
-    FIIa_idx = findfirst(x->x=="FIIa",dd.total_species_list)
-    AP_idx = findfirst(x->x=="AP",dd.total_species_list)
-    PL_idx = findfirst(x->x=="PL",dd.total_species_list)
-    FVIIa_idx = findfirst(x->x=="FVIIa",dd.total_species_list)
-    FXa_idx = findfirst(x->x=="FXa",dd.total_species_list)
-    FVa_idx = findfirst(x->x=="FVa",dd.total_species_list)
+    AT_idx = findfirst(x->x=="AT",model.total_species_list)
+    TFPI_idx = findfirst(x->x=="TFPI",model.total_species_list)
+    FIIa_idx = findfirst(x->x=="FIIa",model.total_species_list)
+    AP_idx = findfirst(x->x=="AP",model.total_species_list)
+    PL_idx = findfirst(x->x=="PL",model.total_species_list)
+    FVIIa_idx = findfirst(x->x=="FVIIa",model.total_species_list)
+    FXa_idx = findfirst(x->x=="FXa",model.total_species_list)
+    FVa_idx = findfirst(x->x=="FVa",model.total_species_list)
 
     
    # r1 -
@@ -105,9 +108,9 @@ function learn_optim(index::Int, model::Dict{String,Any}, training_df::DataFrame
    G[FIIa_idx,10] = p_best[19];
 
     # run the model -
-    (T,U) = evaluate(model)
-    Xₘ = hcat(U...)
-    Yₘ = model_output_vector(T, Xₘ[9,:]) # properties of the Thrombin curve 
+    (T,U) = evaluate(model,tspan=(0.0,120.0))
+    data = [T U]
+    Yₘ = model_output_vector(T, U[:,9]) # properties of the Thrombin curve 
     
-    return (p_best, T, Xₘ, Yₘ)
+    return (p_best, T, U, Yₘ)
 end

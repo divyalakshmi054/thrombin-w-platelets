@@ -36,14 +36,14 @@ Y = Array{Float64,1}(undef,5)
 Y[1] = τlag(x->x>10.0, T, X) # lag time
 Y[2] = maximum(X)            # FIIa peak
 Y[3] = τpeak(T, X)           # time to peak   
-Y[4] = max_FIIa_rate(T, X)   # max rate
+Y[4] = max_FIIa_rate_exp(T, X)   # max rate
 Y[5] = auc(T, X)             # area under curve
 
 # main loop -
 p_previous = nothing
 for i ∈ 2:number_of_samples
     # run the learn routine -
-    (p, T, Xₘ, Yₘ) = learn_optim(i, model, visit_df, Y; pₒ = nothing)
+    (p, T, U, Yₘ) = learn_optim(i, model, visit_df, Y; pₒ = nothing)
 
     # compute the fitness -
     fitness = norm((Yₘ .- Y).^2)
@@ -65,10 +65,10 @@ for i ∈ 2:number_of_samples
         Tables.table(data_output); header = data_output_header)
 
     # dump state to disk -
-    data_state = transpose(vcat(reshape(T,1,length(T)), Xₘ))
+    data_state = [T U]
     data_state_header = ["T", "FII", "FVII", "FV", "FX", "FVIII", "FIX", "FXI", "FXII", "FIIa", "FVIIa", "FVa", "FXa", "FVIIIa", "FIXa", "FXIa", "FXIIa", "FIIa_inactive", "AP", "PL"]
     CSV.write(joinpath(_PATH_TO_ACTUAL_ENSEMBLE, "SIM-Actual-P$(i).csv"),  
-        Tables.table(data_state); header=data_state_header)
+        Tables.table(hcat(data_state)); header=data_state_header)
 
     # update/clean up for the next patient -
     global p_previous = p
