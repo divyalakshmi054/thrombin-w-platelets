@@ -11,3 +11,6 @@ using Plots
 _PATH_TO_MODEL = joinpath(pwd(),"model")
 _PATH_TO_DATA = joinpath(pwd(),"data")
 _PATH_TO_TMP = joinpath(pwd(),"tmp")
+
+# code -
+include("src/Compute.jl")

@@ -12,9 +12,8 @@ data_file = joinpath(_PATH_TO_DATA,"Training-Composition-Transformed-w-Labels.cs
 training_df = CSV.read(data_file,DataFrame)
 
 # which visit?
-visit = 1;
+visit = 2;
 
-#let's filter visit 4s since we look to train using that visit
 visit_df = filter(:Visit => x->(x==visit), training_df) 
 
 # size of training set -
@@ -45,7 +44,8 @@ for i ∈ 1:R
     xₒ[7] = visit_df[i, :XI]         # 7 FXI
     xₒ[8] = visit_df[i, :XII]        # 8 FXII 
     xₒ[9] = (1e-14)*SF               # 9 FIIa
-    xₒ[19] = 0.000274                # 19 PL
+    # xₒ[10] = 0.2
+    xₒ[19] = visit_df[i, :PLT]       # 19 PL
     dd.initial_condition_array = xₒ
 
     # update α -
@@ -75,11 +75,11 @@ for i ∈ 1:R
    G[AP_idx,4] = 0.25;
 
    # r5 -
-   G[AP_idx,5] = 0.12;
+   G[AP_idx,5] = 0.2;
    G[FVIIa_idx,5] = 0.9;
 
    # r6 -
-   G[FXa_idx,6] = 0.75;
+   G[FXa_idx,6] = 0.95;
    G[FVa_idx,6] = 0.9;
 
    # r9 -
