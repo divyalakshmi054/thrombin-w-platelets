@@ -49,12 +49,12 @@ for i ∈ 1:R
     dd.initial_condition_array = xₒ
 
     # update α -
-    α = model.α
+    α = dd.α
     α[1] = 0.7
     α[9] = 0.2
 
     # update G -
-    G = model.G
+    G = dd.G
     AT_idx = findfirst(x->x=="AT",dd.total_species_list)
     TFPI_idx = findfirst(x->x=="TFPI",dd.total_species_list)
     FIIa_idx = findfirst(x->x=="FIIa",dd.total_species_list)

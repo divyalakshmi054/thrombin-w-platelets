@@ -110,7 +110,8 @@ function learn_optim(index::Int, model::BSTModel, training_df::DataFrame, Y;
     # run the model -
     (T,U) = evaluate(model,tspan=(0.0,120.0))
     data = [T U]
-    Yₘ = model_output_vector(T, U[:,9]) # properties of the Thrombin curve 
+    Op = hcat(data)
+    Yₘ = model_output_vector(T, Op[:,10]) # properties of the Thrombin curve 
     
     return (p_best, T, U, Yₘ)
 end
