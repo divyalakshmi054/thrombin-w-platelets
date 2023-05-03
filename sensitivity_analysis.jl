@@ -27,7 +27,7 @@ function performance(κ, model::BSTModel, visit_df::DataFrame, i::Int64)
     xₒ[7] = visit_df[i, :XI]         # 7 FXI
     xₒ[8] = visit_df[i, :XII]        # 8 FXII 
     xₒ[9] = (1e-14)*SF               # 9 FIIa
-    xₒ[19] = 0.000274                # 19 PL
+    xₒ[19] = visit_df[i, :PLT]       # 19 PL
     model.initial_condition_array = xₒ
     
     #get the parameters -
@@ -45,40 +45,42 @@ function performance(κ, model::BSTModel, visit_df::DataFrame, i::Int64)
    # update G -
    G = model.G
    AT_idx = findfirst(x->x=="AT",model.total_species_list)
-   TFPI_idx = findfirst(x->x=="TFPI",model.total_species_list)
-   FIIa_idx = findfirst(x->x=="FIIa",model.total_species_list)
-   AP_idx = findfirst(x->x=="AP",model.total_species_list)
-   FVIIa_idx = findfirst(x->x=="FVIIa",model.total_species_list)
-   FXa_idx = findfirst(x->x=="FXa",model.total_species_list)
+    TFPI_idx = findfirst(x->x=="TFPI",model.total_species_list)
+    FIIa_idx = findfirst(x->x=="FIIa",model.total_species_list)
+    AP_idx = findfirst(x->x=="AP",model.total_species_list)
+    PL_idx = findfirst(x->x=="PL",model.total_species_list)
+    FVIIa_idx = findfirst(x->x=="FVIIa",model.total_species_list)
+    FXa_idx = findfirst(x->x=="FXa",model.total_species_list)
+    FVa_idx = findfirst(x->x=="FVa",model.total_species_list)
  
-    # adjusting parameters for r1
-    G[TFPI_idx, 1] = -1*g[1]
+    G[TFPI_idx,1] = -1*g[1];
+
+    # r2 -
+    G[AP_idx,2] = g[2];
  
-    # adjusting parameters for r2
-    G[AP_idx,2] = g[2]  
+    # r4 -
+    G[AP_idx,4] = g[3];
  
-    # adjusting parameters for r4
-    G[AP_idx,4] = g[3]   
-    
-    # adjusting parameters for r5
-    G[AP_idx,5] = g[4]
-    G[FVIIa_idx,5] = g[5]
-
-    # adjusting parameters for r6
-    G[FXa_idx,6] = g[6]
-
-    # adjusting parameters for r9
-    G[AT_idx,9] = g[7]
-
-    # adjusting parameters for r10
-    G[FIIa_idx,10] = g[8]
-
+    # r5 -
+    G[AP_idx,5] = g[4];
+    G[FVIIa_idx,5] = g[5];
+ 
+    # r6 -
+    G[FXa_idx,6] = g[6];
+    G[FVa_idx,6] = g[7];
+ 
+    # r9 -
+    G[AT_idx,9] = g[8];
+ 
+    # r10 -
+    G[FIIa_idx,10] = g[9];
+ 
     # put it back -
     model.G = G;
 
     # solve -
     # run the model -
-    global (T,U) = evaluate(model,tspan=(0.0,120.0))
+    global (T,U) = evaluate(model,tspan=(0.0,180.0))
     data = [T U]
     # test -
     return integrate(T,U[:,9])    # AUC
@@ -92,14 +94,14 @@ model = build(path_to_model_file)
 
 # load the training data -
 _PATH_TO_DATA = joinpath(pwd(),"data")
-path_to_training_data = joinpath(_PATH_TO_DATA, "Training-Thrombin-TF-Transformed-w-Labels.csv")
+path_to_training_data = joinpath(_PATH_TO_DATA, "Training-Composition-Transformed-w-Labels.csv")
 training_df = CSV.read(path_to_training_data, DataFrame)
 
 # which visit?
-visit = 2;
+visit = 4;
 
 # let's filter visit 4s since we look to train using that visit
-visit_df = filter(:visitid => x->(x==visit), training_df) 
+visit_df = filter(:Visit => x->(x==visit), training_df) 
 
 
 # size of training set -
@@ -110,7 +112,7 @@ a[1] = 0.7
 a[9] = 0.2
 
 #update G -
-g = [0.65, 0.01, 0.25, 0.05, 0.9, 0.75, 0.045, 0.01] # look at sample_ensemble.jl for specific G values
+g = [0.65, 0.01, 0.25, 0.2, 0.9, 0.95, 0.9, 0.045, 0.01] # look at sample_ensemble.jl for specific G values
 
 # fusion -
 parameters = vcat(a,g)
@@ -120,23 +122,25 @@ np = length(parameters)
 L = zeros(np)
 U = zeros(np)
 for pᵢ ∈ 1:(np)
-    L[pᵢ] = 0.01*parameters[pᵢ]
-    U[pᵢ] = 10.0*parameters[pᵢ]
+    L[pᵢ] = 0.5*parameters[pᵢ]
+    U[pᵢ] = 2.0*parameters[pᵢ]
 end
 #L[end] = -3.0;
 #U[end] = 0.0;
 
-patient_index = 1;
+patient_index = 3;
 samples = 1000;
+bootreps = 100;
+# initialize -
+sampler = SobolSample()
+    
+# generate a sampler -
+(A,B) = QuasiMonteCarlo.generate_design_matrices(samples,L,U,sampler)
 
-
-# setup call to Morris method -
+# setup call to Sobol method -
 F(parameters) =  performance(parameters, model, visit_df, patient_index)
-m = gsa(F, Morris(num_trajectory=samples), [[L[i],U[i]] for i in 1:np], relative_scale = false);
-means = transpose(m.means)
-means_star =  transpose(m.means_star)
-variances = transpose(m.variances)
-results_array = hcat(means, means_star, variances)
+m = gsa(F,Sobol(order = [0,1], nboot = bootreps, conf_level = 0.95), A,B)
 
-# dump sensitivity data to disk -
- CSV.write(joinpath(pwd(),"sensitivity","Sensitivity-Morris-test-$(samples).csv"), Tables.table(results_array), header = vcat("mean", "mean_star","variance"))
+# dump -
+results_array = hcat(m.ST, m.S1, m.ST_Conf_Int, m.S1_Conf_Int)
+CSV.write(joinpath(pwd(),"sobol","Sensitivity-Sobol-$(samples)-boot-$(bootreps).csv"), Tables.table(results_array), header = vcat("Total_order", "First_order", "Total_order_CI", "First_order_CI"))
