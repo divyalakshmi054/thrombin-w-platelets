@@ -24,20 +24,20 @@ U = sd_visit_4_FIIa
 plot(Time,visit_4_FIIa,color=colorant"#0077BB",label="",lw=2,fillrange=(visit_4_FIIa-U,U+visit_4_FIIa),fillalpha=0.4)
 xlabel!("Time (min)")
 ylabel!("Activated Thrombin FIIa (nM)")
-plot!([-5],[-5],xlim=(0.0,120.0),line=:scatter,markerstrokecolor=colorant"#0077BB",color=colorant"#0077BB",label = "Visit 9",foreground_color_legend = nothing)
+plot!([-5],[-5],xlim=(0.0,120.0),line=:scatter,markerstrokecolor=colorant"#0077BB",color=colorant"#0077BB",label = "",foreground_color_legend = nothing)
 
-#exp_df = CSV.read(joinpath(_PATH_TO_DATA,"thrombin-platelet-exp-data.csv"),DataFrame)
-#y = scatter!(exp_df[:,:Time],exp_df[:,:FIIa],color=colorant"#0077BB",markerstrokecolor=colorant"#0077BB",label="")
+exp_df = CSV.read(joinpath(_PATH_TO_DATA,"thrombin-platelet-exp-data.csv"),DataFrame)
+y = scatter!(exp_df[:,:Time],exp_df[:,:FIIa],color=colorant"#0077BB",markerstrokecolor=colorant"#0077BB",label="",yerr = 0.1.*exp_df[:,:FIIa])
 
-for i ∈ 1:10
-    FIIa_df = CSV.read(joinpath(_PATH_TO_TMP_CONSTRUCTION,"SIM-visit-1-TF-$(i).csv"),DataFrame)
-    Temp_Thrombin = FIIa_df[1:size_t,:FIIa]
-    SIM_FIIa[:,i] = Temp_Thrombin
-end
+#for i ∈ 1:10
+#    FIIa_df = CSV.read(joinpath(_PATH_TO_TMP_CONSTRUCTION,"SIM-visit-1-TF-$(i).csv"),DataFrame)
+#    Temp_Thrombin = FIIa_df[1:size_t,:FIIa]
+#    SIM_FIIa[:,i] = Temp_Thrombin
+#end
 
-visit_1_FIIa = mean(SIM_FIIa,dims = 2)
-sd_visit_1_FIIa = std(SIM_FIIa,dims = 2)
-U = sd_visit_1_FIIa
-plot!(Time,visit_1_FIIa,color=colorant"#EE7733",label="",lw=2,fillrange=(visit_1_FIIa-U,U+visit_1_FIIa),fillalpha=0.4)
-y = plot!([-5],[-5],xlim=(0.0,120.0),line=:scatter,color=colorant"#EE7733",markerstrokecolor = colorant"#EE7733",label = "Visit 6",foreground_color_legend = nothing)
-savefig(y,joinpath(pwd(),"figs","Actual-N10-FIIa-PL-All.pdf"))
+#visit_1_FIIa = mean(SIM_FIIa,dims = 2)
+#sd_visit_1_FIIa = std(SIM_FIIa,dims = 2)
+#U = sd_visit_1_FIIa
+#plot!(Time,visit_1_FIIa,color=colorant"#EE7733",label="",lw=2,fillrange=(visit_1_FIIa-U,U+visit_1_FIIa),fillalpha=0.4)
+#y = plot!([-5],[-5],xlim=(0.0,120.0),line=:scatter,color=colorant"#EE7733",markerstrokecolor = colorant"#EE7733",label = "Visit 6",foreground_color_legend = nothing)
+savefig(y,joinpath(pwd(),"figs","Actual-N10-FIIa-PL.pdf"))
