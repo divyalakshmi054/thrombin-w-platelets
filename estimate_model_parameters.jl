@@ -50,7 +50,7 @@ function objective_function(parameter_guess_array,model,exp_df)
    t = exp_df[:,:Time]
 
    # simulated values -
-   FIIa_itp = LinearInterpolations(T,U[:,9])
+   FIIa_itp = LinearInterpolation(T,U[:,9])
    FIIa_sim = FIIa_itp[t]
 
    # get experimental data -
@@ -70,6 +70,7 @@ end
 function learn_routine(i,model,visit_df,exp_df; pₒ::Union{Nothing,Array{Float64,1}} = nothing)
 
     # setup static -
+    SF = 1e9
     sfa = model.static_factors_array
     sfa[1] = visit_df[i,:TFPI]       # 1 TFPI
     sfa[2] = visit_df[i,:AT]         # 2 AT
@@ -89,7 +90,7 @@ function learn_routine(i,model,visit_df,exp_df; pₒ::Union{Nothing,Array{Float6
     xₒ[8] = visit_df[i, :XII]        # 8 FXII 
     xₒ[9] = (1e-14)*SF               # 9 FIIa
     xₒ[19] = visit_df[i, :PLT]       # 19 PL
-    dd.initial_condition_array = xₒ
+    model.initial_condition_array = xₒ
 
     # set up obj fn -
     OF(p) = objective_function(p,model,exp_df)
@@ -106,14 +107,14 @@ function learn_routine(i,model,visit_df,exp_df; pₒ::Union{Nothing,Array{Float6
     0.2     0.01    10.0; # 9
     1.0     0.01    10.0; # 10
     0.65    0.01    10.0; # 11
-    0.01    0.01    10.0; # 12
+    0.01    0.001   10.0; # 12
     0.25    0.01    10.0; # 13
     0.2     0.01    10.0; # 14
     0.9     0.01    10.0; # 15
     0.95    0.01    10.0; # 16
     0.9     0.01    10.0; # 17
     0.045   0.01    10.0; # 18
-    0.01    0.005   10.0  # 19
+    0.01    0.001   10.0  # 19
     ];
 
     #if (isnothing(pₒ) == true)
@@ -131,7 +132,7 @@ function learn_routine(i,model,visit_df,exp_df; pₒ::Union{Nothing,Array{Float6
 end
 
 # load exp data & model -
-exp_df = CSV.read(joinpath(_PATH_TO_DATA,"thrombin-platelet-exp-data.CSV"),DataFrame)
+exp_df = CSV.read(joinpath(_PATH_TO_DATA,"thrombin-platelet-exp-data.csv"),DataFrame)
 model_file = joinpath(_PATH_TO_MODEL,"Feedback.bst")
 
 # build the model -
@@ -142,7 +143,7 @@ data_file = joinpath(_PATH_TO_DATA,"Training-Composition-Transformed-w-Labels.cs
 training_df = CSV.read(data_file,DataFrame)
 
 # which visit?
-visit = 4;
+visit = 1;
 
 visit_df = filter(:Visit => x->(x==visit), training_df) 
 
@@ -213,12 +214,12 @@ for i ∈ 1:R
    (T,U) = evaluate(model,tspan=(0.0,120.0))
 
    # dump p_best to disk -
-   CSV.write(joinpath(_PATH_TO_ACTUAL_ENSEMBLE,"PSET-Actual-P$(i).csv"),Tables.table(ensemble_archive),header = ["parameters"])
+   CSV.write(joinpath(_PATH_TO_ACTUAL_ENSEMBLE,"PSET-Actual-Visit-$(visit)-P$(i).csv"),Tables.table(ensemble_archive),header = ["parameters"])
 
    # dump SIM to disk -
    data = [T U]
 
-    path_to_sim_data = joinpath(_PATH_TO_ACTUAL_ENSEMBLE, "SIM-Hemophilia-$(i).csv")
+    path_to_sim_data = joinpath(_PATH_TO_ACTUAL_ENSEMBLE, "SIM-Pregnancy-Visit-$(visit)-$(i).csv")
     CSV.write(path_to_sim_data, Tables.table(hcat(data),header=vcat("Time",model.list_of_dynamic_species)))
 
     global p_previous = nothing;
