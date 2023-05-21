@@ -12,7 +12,7 @@ data_file = joinpath(_PATH_TO_DATA,"Training-Composition-Transformed-w-Labels.cs
 training_df = CSV.read(data_file,DataFrame)
 
 # which visit?
-visit = 4;
+visit = 1;
 
 visit_df = filter(:Visit => x->(x==visit), training_df)
 
