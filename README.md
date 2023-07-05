@@ -10,4 +10,4 @@ To generate average plots for N patients: Open the appropriate experimental data
 
 To run Sobol sensitivity analysis: Edit number of samples and bootreps in gsa method in `sensitivity_analysis.jl`, then `include("sensitivity.jl")`. This routine also dumps Sobol results to disk to a `sobol` directory within pwd
 
-To plot Sobol indices: `include("plot_sensitivity.jl")`; you may need to update the CSV filename or the path to file containing the sobol results
+To plot sensitivity: `include("plot_sensitivity.jl")`; you may need to update the CSV filename or the path to file containing the sobol results
