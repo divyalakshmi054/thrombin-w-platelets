@@ -16,12 +16,6 @@ visit = 1;
 
 visit_df = filter(:Visit => x->(x==visit), training_df)
 
-# load PSET -
-pset_name = "PSET-Actual-Visit-4-P6.csv"
-path_to_parameters = joinpath(pwd(),"actual_ensemble_s_system",pset_name)
-parameter_df = CSV.read(path_to_parameters,DataFrame)
-p_use = parameter_df[2:end,:parameters] # first is the error
-
 # size of training set -
 (R,C) = size(visit_df)
 
@@ -29,6 +23,12 @@ p_use = parameter_df[2:end,:parameters] # first is the error
 SF = 1e9
 for i ∈ 1:R
 
+    # load PSET -
+    pset_name = "PSET-Actual-Visit-4-P$(i).csv"
+    path_to_parameters = joinpath(pwd(),"actual_ensemble_s_system",pset_name)
+    parameter_df = CSV.read(path_to_parameters,DataFrame)
+    p_use = parameter_df[2:end,:parameters] # first is the error
+    
     # build new model -
     dd = deepcopy(model)
     # setup static -
@@ -103,7 +103,7 @@ for i ∈ 1:R
    G[FIIa_idx,10] = p_use[19];
 
     # run the model -
-    global (T,U) = evaluate(dd,tspan=(0.0,120.0))
+    global (T,U) = evaluate(dd,tspan=(0.0,180.0))
     data = [T U]
 
     path_to_sim_data = joinpath(_PATH_TO_TMP_CONSTRUCTION, "SIM-visit-$(visit)-TF-$(i).csv")
